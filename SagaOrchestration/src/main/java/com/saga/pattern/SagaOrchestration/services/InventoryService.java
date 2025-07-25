@@ -13,6 +13,6 @@ public class InventoryService {
 
     public void reserveInventory(String orderId) {
         String inventoryStatus = "Inventory Reserved for order: " + orderId;
-        kafkaTemplate.send("inventory-events-topic", inventoryStatus);
+        kafkaTemplate.send("inventory-topic", inventoryStatus);
     }
 }

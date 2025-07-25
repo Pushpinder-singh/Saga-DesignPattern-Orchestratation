@@ -15,7 +15,7 @@ public class OrderService {
 
     public void placeOrder(OrderDTO orderRequest) {
         String orderEvent = String.format("Order Placed: %s", orderRequest.getOrderId());
-        kafkaTemplate.send("order-events-topic", orderEvent);
+        kafkaTemplate.send("order-topic", orderEvent);
         System.out.println("Order event published: " + orderEvent);
     }
 }

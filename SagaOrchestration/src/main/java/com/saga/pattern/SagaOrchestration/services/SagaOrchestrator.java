@@ -17,7 +17,7 @@ public class SagaOrchestrator {
 	@Autowired
 	InventoryService inventoryService;
 	
-	@KafkaListener(topics = "order-events-topic", groupId = "saga-group")
+	@KafkaListener(topics = "order-topic", groupId = "saga-group")
     public void handleOrderEvent(String event) {
         System.out.println("Received Order Event: " + event);
 		// Send Payment request after order creation
@@ -26,19 +26,28 @@ public class SagaOrchestrator {
     }
 
     @KafkaListener(topics = "payment-events-topic", groupId = "saga-group")
-    public void handlePaymentEvent(String event) {
-        System.out.println("Received Payment Event: " + event);
+    public void handlePaymentEvent(String paymentEvent) {
+        System.out.println("Received Payment Event: " + paymentEvent);
         // Trigger Inventory service after successful payment
-        //if true
-        inventoryService.reserveInventory(event);
-        // else rollback if payment fails
+        if ("SUCCESS".equals(paymentEvent)) {
+            KafkaTemplate.send("inventory-topic", "Reserve Inventory");
+//            inventoryService.reserveInventory(event);
+        } else {
+        	 // else rollback if payment fails
+            KafkaTemplate.send("order-topic", "Cancel Order");
+        }
     }
 
     @KafkaListener(topics = "inventory-events-topic", groupId = "saga-group")
-    public void handleInventoryEvent(String event) {
-        System.out.println("Received Inventory Event: " + event);
-        
-        // Finalize order if inventory is reserved
+    public void handleInventoryEvent(String inventoryStatusEvent) {
+        System.out.println("Received Inventory Event: " + inventoryStatusEvent);
+        if ("RESERVED".equals(inventoryStatusEvent)) {
+        	// Finalize order if inventory is reserved
+            KafkaTemplate.send("order-topic", "Complete Order");
+        } else {
+            KafkaTemplate.send("order-topic", "Cancel Order");
+        }
+
     }
 
 }

@@ -14,6 +14,6 @@ public class PaymentService {
     public void processPayment(String orderId) {
         // Simulate payment success or failure
         String paymentStatus = "Payment Success for order: " + orderId;
-        kafkaTemplate.send("payment-events-topic", paymentStatus);
+        kafkaTemplate.send("payment-topic", paymentStatus);
     }
 }
